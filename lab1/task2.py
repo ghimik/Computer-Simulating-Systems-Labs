@@ -27,11 +27,9 @@ def polynomial_model(x, degree):
     return model.predict(x_poly), model
 
 def power_law(x, a, b):
-    # Степенная модель
     return a * x**b
 
 def log_model(x, a, b):
-    # Логарифмическая модель
     return a * np.log(x) + b
 
 # Линейная модель
@@ -50,13 +48,11 @@ power_pred = power_law(x + 1, *params_power)
 params_log, _ = curve_fit(log_model, x + 1, prices)
 log_pred = log_model(x + 1, *params_log)
 
-# Рассчитываем R^2 для каждой модели
 r2_linear = r2_score(prices, linear_pred)
 r2_poly = r2_score(prices, poly_pred)
 r2_power = r2_score(prices, power_pred)
 r2_log = r2_score(prices, log_pred)
 
-# Построение графиков
 fig, axs = plt.subplots(2, 2, figsize=(14, 10))
 
 # Линейная модель
