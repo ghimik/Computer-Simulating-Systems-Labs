@@ -33,7 +33,7 @@ class RealisticViscousFallSimulator:
     def _precalculate(self) -> None:
         """Предварительные расчеты."""
         self.volume = (4 / 3) * np.pi * self.r**3
-        self.mass = (self.rho_obj - self.rho_med) * self.volume  # Эффективная масса
+        self.mass = (self.rho_obj - self.rho_med) * self.volume 
         self.time = np.arange(0, self.t_max + self.dt, self.dt)
 
     def solve(self, viscosity: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:

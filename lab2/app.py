@@ -5,9 +5,9 @@ from PySide6.QtWidgets import (
     QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QWidget, QGridLayout
 )
 from PySide6.QtCore import Qt
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas  # Для Qt6
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas  
 from matplotlib.figure import Figure
-from solver import RealisticViscousFallSimulator  # Импортируем класс
+from solver import RealisticViscousFallSimulator  
 
 
 class FallSimulatorApp(QMainWindow):
