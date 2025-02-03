@@ -5,9 +5,6 @@ from solver import RealisticViscousFallSimulator
 
 class TestRealisticViscousFallSimulator(unittest.TestCase):
     def setUp(self):
-        """
-        Устанавливаем параметры для тестов.
-        """
         self.radius = 0.01  # радиус шара (м)
         self.object_density = 1000  # плотность материала шара (кг/м³)
         self.medium_density = 998  # плотность среды (кг/м³)
@@ -49,7 +46,7 @@ class TestRealisticViscousFallSimulator(unittest.TestCase):
         """
         _, _, height = self.simulator.solve(self.viscosity)
         v_terminal = self.simulator.get_terminal_velocity(self.viscosity)
-        t_linear_start = int(0.8 * len(self.simulator.time))  # last 20% времени
+        t_linear_start = int(0.8 * len(self.simulator.time))  # ласт 20% времени
         
         expected_heights = v_terminal * self.simulator.time[t_linear_start:]
         calculated_heights = height[t_linear_start:]

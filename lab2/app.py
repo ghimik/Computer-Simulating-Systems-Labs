@@ -2,7 +2,7 @@ import sys
 import numpy as np
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QLabel,
-    QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QWidget, QGridLayout
+    QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QWidget, QGridLayout, QMessageBox
 )
 from PySide6.QtCore import Qt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas  
@@ -70,13 +70,13 @@ class FallSimulatorApp(QMainWindow):
         Запуск симуляции.
         """
         try:
-            radius = float(self.inputs["Radius (m):"].text())
-            object_density = float(self.inputs["Object Density (kg/m³):"].text())
-            medium_density = float(self.inputs["Medium Density (kg/m³):"].text())
-            viscosity = float(self.inputs["Viscosity (Pa·s):"].text())
-            g = float(self.inputs["Gravity (m/s²):"].text())
-            t_max = float(self.inputs["Max Time (s):"].text())
-            dt = float(self.inputs["Time Step (s):"].text())
+            radius = self.get_input_value("Radius (m):")
+            object_density = self.get_input_value("Object Density (kg/m³):")
+            medium_density = self.get_input_value("Medium Density (kg/m³):")
+            viscosity = self.get_input_value("Viscosity (Pa·s):")
+            g = self.get_input_value("Gravity (m/s²):")
+            t_max = self.get_input_value("Max Time (s):")
+            dt = self.get_input_value("Time Step (s):")
 
             self.simulator = RealisticViscousFallSimulator(
                 radius, object_density, medium_density, g, t_max, dt
@@ -89,7 +89,26 @@ class FallSimulatorApp(QMainWindow):
             self.update_table(time, velocity, height)
 
         except ValueError as e:
-            print(f"Ошибка ввода: {e}")
+            self.show_error_message(str(e))
+
+    def get_input_value(self, label):
+        """
+        Получает и проверяет значение ввода.
+        """
+        try:
+            return float(self.inputs[label].text())
+        except ValueError:
+            raise ValueError(f"Неверное значение для '{label}'")
+
+    def show_error_message(self, message):
+        """
+        Показывает сообщение об ошибке.
+        """
+        msg_box = QMessageBox(self)
+        msg_box.setIcon(QMessageBox.Critical)
+        msg_box.setWindowTitle("Ошибка ввода")
+        msg_box.setText(message)
+        msg_box.exec()
 
     def update_plots(self, time, velocity, height):
         """
@@ -112,6 +131,8 @@ class FallSimulatorApp(QMainWindow):
         ax2.set_ylabel("Height (m)")
         ax2.legend()
         ax2.grid()
+
+        self.figure.subplots_adjust(hspace=0.4)
 
         self.canvas.draw()
 

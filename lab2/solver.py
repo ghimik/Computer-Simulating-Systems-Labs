@@ -17,6 +17,9 @@ class RealisticViscousFallSimulator:
         :param t_max: максимальное время моделирования (с)
         :param dt: шаг времени (с)
         """
+        if radius < 0 or object_density < 0 or medium_density < 0 or g < 0 or t_max < 0 or dt <= 0:
+            raise ValueError("Все параметры должны быть неотрицательными, а dt должен быть положительным.")
+        
         self.r = radius
         self.rho_obj = object_density
         self.rho_med = medium_density
@@ -43,6 +46,9 @@ class RealisticViscousFallSimulator:
         :param viscosity: вязкость среды (Па·с)
         :return: массивы времени, скорости и высоты
         """
+        if viscosity < 0:
+            raise ValueError("Вязкость среды должна быть положительной.")
+        
         k = 6 * np.pi * viscosity * self.r
         print(f"Коэффициент сопротивления (k): {k}")  # трейс k
         
