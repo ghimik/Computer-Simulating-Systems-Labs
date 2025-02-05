@@ -2,7 +2,7 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 from abc import ABC, abstractmethod
-from typing import List, Optional, Tuple, Callable
+from typing import List, Optional, Tuple, Callable, override
 
 class Function(ABC, Callable[[float], float]):
     @abstractmethod
@@ -16,7 +16,7 @@ class Function(ABC, Callable[[float], float]):
         return "f(x)"
 
     def derivative(self) -> 'Function':
-        return NumericalDerivative(self)
+        return AnotherNumericalDerivative(self)
 
 class LaboratoryFunction(Function):
     def value_at(self, x: float) -> float:
@@ -44,7 +44,7 @@ class CustomStringFunction(Function):
         return eval(self.expression, {"x": x, "math": math})
 
     def __str__(self) -> str:
-        return self.expression
+        return f"f(x) = {self.expression}"
     
 class CustomStringAndLambdaFunction(Function):
     def __init__(self, expression: str, lambda_func: Callable[[float], float]) -> None:
@@ -55,19 +55,31 @@ class CustomStringAndLambdaFunction(Function):
         return self.lambda_func(x)
 
     def __str__(self) -> str:
-        return self.expression
+        return f"f(x) = {self.expression}"
 
 class NumericalDerivative(Function):
     def __init__(self, function: Function, h: float = 1e-5) -> None:
         self.function = function
         self.h = h
 
+    @override
     def value_at(self, x: float) -> float:
         h = max(self.h, abs(x) * 1e-5)
         return (self.function.value_at(x + h) - self.function.value_at(x - h)) / (2 * h)
 
     def __str__(self) -> str:
         return f"d({self.function})/dx"
+
+
+class AnotherNumericalDerivative(NumericalDerivative):
+    def __init__(self, function: Function, h: float = 1e-7) -> None:
+        self.function = function
+        self.h = h
+
+    @override
+    def value_at(self, x: float) -> float:
+        return (self.function.value_at(x) - self.function.value_at(x - self.h)) / self.h
+
 
 class Functions:
     @staticmethod
@@ -272,36 +284,45 @@ class Optional[T]:
         return f"Optional({self._value})"
     
 
-class ExtremumIntervalDetector:
+class ExtremumIntervalDetector(ABC):
     def __init__(self, function: Function, step: float = None, search_interval: Interval = Interval(-1000, 1000)):
         self.function = function
         self.search_interval = search_interval
         if step is None:
             if search_interval is not None:
-                self.step = (search_interval.to() - search_interval.from_()) / 1000
+                self.step = (search_interval.to() - search_interval.from_()) / 10
             else:
-                self.step = 0.01
+                self.step = 0.1
         else:
             self.step = step
 
     def find_extremum_intervals(self) -> List[Interval]:
         derivative = self.function.derivative()
         x_values = np.arange(self.search_interval.from_(), self.search_interval.to(), self.step)
-        previous_value = derivative.value_at(x_values[0])
         potential_intervals = []
 
-        for i in range(1, len(x_values) - 1):
-            current_value = derivative.value_at(x_values[i])
-            next_value = derivative.value_at(x_values[i + 1])
-
-            # смена знака производной
-            if (previous_value * current_value < 0) or (current_value * next_value < 0):
-                potential_intervals.append(Interval(x_values[i - 1], x_values[i + 1]))
-
-            # проверкана близость к нулю
-            if abs(current_value) < self.step:  
-                potential_intervals.append(Interval(x_values[i - 1], x_values[i + 1]))
-
-            previous_value = current_value
+        for x in x_values:
+            root = self.find_root(derivative, x)
+            if root is not None:
+                potential_intervals.append(Interval(root - self.step, root + self.step))
 
         return potential_intervals
+
+    @abstractmethod
+    def find_root(self, derivative: Function, initial_guess: float) -> Optional[float]:
+        pass
+
+class NewtonExtremumIntervalDetector(ExtremumIntervalDetector):
+    def find_root(self, derivative: Function, initial_guess: float, tolerance: float = 1e-5, max_iterations: int = 1000) -> Optional[float]:
+        x = initial_guess
+        second_derivative = derivative.derivative()
+        for _ in range(max_iterations):
+            f_prime_x = derivative.value_at(x)
+            if abs(f_prime_x) < tolerance:
+                return x
+            f_double_prime_x = second_derivative.value_at(x)
+            if f_double_prime_x == 0:
+                return None
+            x -= f_prime_x / f_double_prime_x
+        return None
+

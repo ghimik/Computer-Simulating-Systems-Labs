@@ -55,13 +55,14 @@ def script_four():
 
 def main():
     function = Functions.lab_function()
+    # function = Functions.new_from_lambda(lambda x: x * math.exp(x) * (math.sin(x))**2)
     search_interval = Interval(0, 20)
-    finder = ExtremumIntervalDetector(function, search_interval=search_interval)
+    finder = NewtonExtremumIntervalDetector(function, search_interval=search_interval)
     intervals = finder.find_extremum_intervals()
     graph_function = GraphBuilder(function, search_interval, 0.01)
     graph_function.build()
 
-    epsilons = [1e-2, 1e-3, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9, 1e-10, 1e-11, 1e-12, 1e-13]
+    epsilons = [1e-2, 1e-3, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9, 1e-10, 1e-11, 1e-12, 1e-13, 1e-14, 1e-15]
 
     golden_context = LimitedIterationalContext(max_iterations=200_000)
     dichotomy_context = LimitedIterationalContext(max_iterations=200_000)
