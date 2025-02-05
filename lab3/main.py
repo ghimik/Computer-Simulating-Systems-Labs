@@ -55,8 +55,8 @@ def script_four():
 
 def main():
     function = Functions.lab_function()
-    # function = Functions.new_from_lambda(lambda x: x * math.exp(x) * (math.sin(x))**2)
-    search_interval = Interval(0, 20)
+    # function = Functions.new_from_lambda(lambda x: x ** 3)
+    search_interval = Interval(-10, 20)
     finder = NewtonExtremumIntervalDetector(function, search_interval=search_interval)
     intervals = finder.find_extremum_intervals()
     graph_function = GraphBuilder(function, search_interval, 0.01)

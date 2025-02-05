@@ -213,7 +213,7 @@ class DichotomyMethod(IterationalExtremumFinder):
             raise Exception("No extremum in the interval")
         
         is_minimum = True
-        while (b - a) / 2 > epsilon:
+        while (b - a) / 2> epsilon:
             self.count_iteration()
             x1 = (b + a - epsilon) / 2
             x2 = (b + a + epsilon) / 2
@@ -246,7 +246,7 @@ class GoldenSectionMethod(IterationalExtremumFinder):
         lambda1 = a + (1 - self.golden_section_tau) * (b - a)
         mu1 = a + self.golden_section_tau * (b - a)
         is_minimum = True
-        while abs(b - a) > epsilon:
+        while abs(b - a) / 2 > epsilon:
             self.count_iteration()
             if function.value_at(lambda1) < function.value_at(mu1):
                 b = mu1
