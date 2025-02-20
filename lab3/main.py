@@ -27,7 +27,7 @@ def script_two():
         print(e)
 
 def script_three():
-    function = Functions.new_from_lambda(lambda x: x * (math.sin(x))**2)
+    function = Functions.lab_function()
     interval = Interval(-2, 2)
     context = LimitedIterationalContext(max_iterations=50000)
     golden_section = GoldenSectionMethod(context)
