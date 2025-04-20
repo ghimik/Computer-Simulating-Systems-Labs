@@ -1,61 +1,69 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import solve_ivp
-
-
 from parser import parse_system
 from utils import compute_orders
 
-
-def plot_solution(equations, vars, params, t_span, y0, t_eval=None, title="Solution", xlabel="t", ylabel="y"):
-    """
-    Решает систему (или одиночное) ОДУ, заданную списком уравнений в виде строк, и строит график решения.
-    
-    Параметры:
-      - equations: список уравнений (например, ["y' = y**2 - t*y"] или
-                   ["y1' = -y2 - y3", "y2' = y1 + a*y2", "y3' = b + y3*(y1 - c)"]).
-      - vars: список переменных, где первый элемент — независимая переменная (например, 't'),
-              а остальные — зависимые переменные.
-      - params: словарь параметров (например, {'a': 1.0}).
-      - t_span: кортеж (t0, tf) интервала интегрирования.
-      - y0: начальные условия для всех состояний. Для переменной, задаваемой дифференциальным уравнением
-            более высокого порядка, начальные условия должны быть заданы для всех её составляющих.
-      - t_eval: (опционально) массив значений времени, в которых требуется вычислить решение.
-      - title, xlabel, ylabel: название графика и подписи осей.
-    
-    Функция строит график: если задана одна зависимая переменная, выводится один график;
-    если несколько – каждый график подписывается именем переменной (для переменных более высокого порядка
-    отрисовывается только первое состояние, соответствующее значению переменной).
-    """
-    # Получаем функцию системы для solve_ivp
+def plot_solution(equations, vars, params, t_span, y0, t_eval=None, title="Решение", xlabel="t", ylabel="y"):
     system = parse_system(equations, vars, params)
     
     if t_eval is None:
-        t_eval = np.linspace(t_span[0], t_span[1], 200)
+        t_eval = np.linspace(t_span[0], t_span[1], 500)
         
-    sol = solve_ivp(system, t_span, y0, t_eval=t_eval)
+    sol = solve_ivp(system, t_span, y0, t_eval=t_eval, method='RK45')
     
-    # Вычисляем порядок для каждой зависимой переменной
     dep_vars = vars[1:]
     orders = compute_orders(equations, dep_vars)
     
-    plt.figure(figsize=(8, 6))
+    # Графики временных рядов
+    plt.figure(figsize=(12, 6))
+    cumulative_idx = 0
+    for var in dep_vars:
+        order = orders.get(var, 1)
+        for i in range(order):
+            label = f"{var}" + "'" * i
+            plt.plot(sol.t, sol.y[cumulative_idx + i], label=label)
+        cumulative_idx += order
     
-    # Если имеется одна зависимая переменная, её первое состояние – это и есть решение.
-    if len(dep_vars) == 1:
-        plt.plot(sol.t, sol.y[0, :], label=dep_vars[0])
-    else:
-        # Для систем: каждый зависимый переменный занимает 'order' позиций в векторе состояния.
-        cumulative_index = 0
-        for var in dep_vars:
-            order = orders.get(var, 1)
-            # Первое состояние для переменной (индекс cumulative_index) соответствует самой переменной.
-            plt.plot(sol.t, sol.y[cumulative_index, :], label=var)
-            cumulative_index += order
-    
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.title(title)
+    plt.title(f"{title}\nВременные зависимости", fontsize=14)
+    plt.xlabel(xlabel, fontsize=12)
+    plt.ylabel(ylabel, fontsize=12)
     plt.legend()
     plt.grid(True)
+    plt.tight_layout()
     plt.show()
+
+    # Фазовые портреты
+    cumulative_idx = 0
+    for var in dep_vars:
+        order = orders.get(var, 1)
+        if order >= 2:
+            plt.figure(figsize=(8, 6))
+            x = sol.y[cumulative_idx]
+            dx = sol.y[cumulative_idx + 1]
+            plt.plot(x, dx, color='purple')
+            plt.title(f"{title}\nФазовый портрет: {var}' vs {var}", fontsize=14)
+            plt.xlabel(var, fontsize=12)
+            plt.ylabel(f"{var}'", fontsize=12)
+            plt.grid(True)
+            plt.tight_layout()
+            plt.show()
+        cumulative_idx += order
+
+    # Дополнительные фазовые портреты между переменными
+    if len(dep_vars) >= 2:
+        plt.figure(figsize=(8, 6))
+        idx = 0
+        for i, var1 in enumerate(dep_vars):
+            for j, var2 in enumerate(dep_vars):
+                if i < j:
+                    x = sol.y[idx]
+                    y = sol.y[idx + orders[var1]]
+                    plt.plot(x, y, label=f"{var1} vs {var2}")
+        plt.title(f"{title}\nФазовый портрет системы", fontsize=14)
+        plt.xlabel(dep_vars[0], fontsize=12)
+        plt.ylabel(dep_vars[1], fontsize=12)
+        plt.legend()
+        plt.grid(True)
+        plt.tight_layout()
+        plt.show()

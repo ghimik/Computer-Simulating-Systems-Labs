@@ -26,12 +26,9 @@ def example2():
     sol = solve_ivp(system, [0, 30], [2, 0], t_eval=t_eval)
     return sol
 
-# Пример: y' = y^2 - y*t
 f1 = parse_system(["y' = y**2 - t*y"], ['t', 'y'], {})
-# Пример: y' = y^2 + 1
 f2 = parse_system(["y' = y**2 + 1"], ['t', 'y'], {})
 
-# Пример системы:
 # y1' = -y2 - y3
 # y2' = y1 + a*y2
 # y3' = b + y3*(y1 - c)
@@ -47,7 +44,6 @@ sol = solve_ivp(system, [0, 10], [1, 0, 0], t_eval=t_eval)
 print(sol.t)
 print(sol.y)
 
-# Пример системы:
 # x' = a*x - b*x*y
 # y' = c*x*y - d*y
 params = {'a': 1.0, 'b': 0.1, 'c': 0.075, 'd': 1.5}

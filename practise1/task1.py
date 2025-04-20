@@ -49,7 +49,7 @@ def visualize_solution(time_interval, solution, title):
     :param title: Заголовок графика.
     """
     t = np.linspace(time_interval[0], time_interval[1], 300)
-    y = solution.sol(t)  # Получаем значения y(t) через dense_output
+    y = solution.sol(t)  
     plt.figure(figsize=(8, 5))
     plt.plot(t, y.T, label=r'$y(t)$', color='blue')
     plt.xlabel(r'$t$', fontsize=14)

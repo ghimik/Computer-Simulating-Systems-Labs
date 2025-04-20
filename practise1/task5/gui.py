@@ -1,6 +1,8 @@
-import tkinter as tk
-from tkinter import messagebox
-import numpy as np
+import sys
+from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
+                              QHBoxLayout, QLabel, QTextEdit, QLineEdit, 
+                              QPushButton, QMessageBox)
+
 from visualization import plot_solution
 
 def parse_params(params_str):
@@ -11,21 +13,19 @@ def parse_params(params_str):
     params = {}
     params_str = params_str.strip()
     if params_str:
-        # Разделяем по запятым
         pairs = params_str.split(',')
         for pair in pairs:
             if '=' in pair:
                 key, value = pair.split('=')
                 key = key.strip()
                 try:
-                    # Преобразуем значение в float (можно дополнить для более сложных типов)
                     value = float(value)
                 except ValueError:
-                    messagebox.showerror("Ошибка", f"Невозможно преобразовать значение параметра {key}")
+                    QMessageBox.critical(None, "Ошибка", f"Невозможно преобразовать значение параметра {key}")
                     return None
                 params[key] = value
             else:
-                messagebox.showerror("Ошибка", "Неверный формат параметров. Используйте формат a=1.0, b=0.1")
+                QMessageBox.critical(None, "Ошибка", "Неверный формат параметров. Используйте формат a=1.0, b=0.1")
                 return None
     return params
 
@@ -49,94 +49,104 @@ def parse_initial_conditions(ic_str):
             try:
                 ic.append(float(part))
             except ValueError:
-                messagebox.showerror("Ошибка", f"Невозможно преобразовать '{part}' в число для начальных условий")
+                QMessageBox.critical(None, "Ошибка", f"Невозможно преобразовать '{part}' в число для начальных условий")
                 return None
     return ic
 
-def build_gui():
-    root = tk.Tk()
-    root.title("ODE Solver GUI")
-    root.geometry("600x500")
-
-    # Рамка для уравнений
-    frame_eq = tk.Frame(root)
-    frame_eq.pack(padx=10, pady=5, fill="x")
-    tk.Label(frame_eq, text="Уравнения (каждое с новой строки):").pack(anchor="w")
-    text_eq = tk.Text(frame_eq, height=6)
-    text_eq.pack(fill="both", padx=5, pady=5)
-    # Пример: y' = y**2 - t*y
-    text_eq.insert("end", "y' = y**2 - t*y\n")   # можно убрать или оставить пример
-
-    # Рамка для переменных
-    frame_vars = tk.Frame(root)
-    frame_vars.pack(padx=10, pady=5, fill="x")
-    tk.Label(frame_vars, text="Переменные (через запятую, первый всегда независимая, например, t, y):").pack(anchor="w")
-    entry_vars = tk.Entry(frame_vars)
-    entry_vars.pack(fill="x", padx=5, pady=5)
-    entry_vars.insert(0, "t, y")
-
-    # Рамка для параметров
-    frame_params = tk.Frame(root)
-    frame_params.pack(padx=10, pady=5, fill="x")
-    tk.Label(frame_params, text="Параметры (формат: a=1.0, b=0.1):").pack(anchor="w")
-    entry_params = tk.Entry(frame_params)
-    entry_params.pack(fill="x", padx=5, pady=5)
-
-    # Рамка для начальных условий
-    frame_ic = tk.Frame(root)
-    frame_ic.pack(padx=10, pady=5, fill="x")
-    tk.Label(frame_ic, text="Начальные условия (через запятую, например, 1, 0):").pack(anchor="w")
-    entry_ic = tk.Entry(frame_ic)
-    entry_ic.pack(fill="x", padx=5, pady=5)
-
-    # Рамка для интервала интегрирования
-    frame_tspan = tk.Frame(root)
-    frame_tspan.pack(padx=10, pady=5, fill="x")
-    tk.Label(frame_tspan, text="Интервал времени (t0, tf):").pack(anchor="w")
-    entry_t0 = tk.Entry(frame_tspan, width=10)
-    entry_t0.pack(side="left", padx=5, pady=5)
-    entry_t0.insert(0, "0")
-    entry_tf = tk.Entry(frame_tspan, width=10)
-    entry_tf.pack(side="left", padx=5, pady=5)
-    entry_tf.insert(0, "10")
-
-    def on_plot():
-        # Чтение введённых данных
-        eq_text = text_eq.get("1.0", "end").strip()
+class ODESolverGUI(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("ODE Solver GUI")
+        self.setGeometry(100, 100, 600, 500)
+        
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
+        
+        self.layout = QVBoxLayout(self.central_widget)
+        
+        # Уравнения
+        self.eq_label = QLabel("Уравнения (каждое с новой строки):")
+        self.text_eq = QTextEdit()
+        self.text_eq.setPlainText("y' = y**2 - t*y\n")
+        self.text_eq.setMinimumHeight(120)
+        
+        # Переменные
+        self.vars_label = QLabel("Переменные (через запятую, первый всегда независимая, например, t, y):")
+        self.entry_vars = QLineEdit("t, y")
+        
+        # Параметры
+        self.params_label = QLabel("Параметры (формат: a=1.0, b=0.1):")
+        self.entry_params = QLineEdit()
+        
+        # Начальные условия
+        self.ic_label = QLabel("Начальные условия (через запятую, например, 1, 0):")
+        self.entry_ic = QLineEdit()
+        self.entry_ic.setText("1")
+        
+        # Интервал времени
+        self.tspan_label = QLabel("Интервал времени (t0, tf):")
+        self.tspan_layout = QHBoxLayout()
+        self.entry_t0 = QLineEdit("0")
+        self.entry_t0.setMaximumWidth(100)
+        self.entry_tf = QLineEdit("10")
+        self.entry_tf.setMaximumWidth(100)
+        self.tspan_layout.addWidget(self.entry_t0)
+        self.tspan_layout.addWidget(self.entry_tf)
+        self.tspan_layout.addStretch()
+        
+        # Кнопка построения графика
+        self.btn_plot = QPushButton("Построить график")
+        self.btn_plot.clicked.connect(self.on_plot)
+        
+        # Добавление виджетов в основной layout
+        self.layout.addWidget(self.eq_label)
+        self.layout.addWidget(self.text_eq)
+        self.layout.addWidget(self.vars_label)
+        self.layout.addWidget(self.entry_vars)
+        self.layout.addWidget(self.params_label)
+        self.layout.addWidget(self.entry_params)
+        self.layout.addWidget(self.ic_label)
+        self.layout.addWidget(self.entry_ic)
+        self.layout.addWidget(self.tspan_label)
+        self.layout.addLayout(self.tspan_layout)
+        self.layout.addWidget(self.btn_plot)
+        self.layout.addStretch()
+    
+    def on_plot(self):
+        eq_text = self.text_eq.toPlainText().strip()
         if not eq_text:
-            messagebox.showerror("Ошибка", "Введите уравнения")
+            QMessageBox.critical(self, "Ошибка", "Введите уравнения")
             return
         equations = [line.strip() for line in eq_text.splitlines() if line.strip()]
         
-        vars_list = parse_list(entry_vars.get())
+        vars_list = parse_list(self.entry_vars.text())
         if not vars_list:
-            messagebox.showerror("Ошибка", "Введите переменные")
+            QMessageBox.critical(self, "Ошибка", "Введите переменные")
             return
-        params = parse_params(entry_params.get())
+        params = parse_params(self.entry_params.text())
         if params is None:
             return
-        ic = parse_initial_conditions(entry_ic.get())
+        ic = parse_initial_conditions(self.entry_ic.text())
         if ic is None:
             return
         try:
-            t0 = float(entry_t0.get())
-            tf = float(entry_tf.get())
+            t0 = float(self.entry_t0.text())
+            tf = float(self.entry_tf.text())
         except ValueError:
-            messagebox.showerror("Ошибка", "Введите корректные числовые значения для интервала времени")
+            QMessageBox.critical(self, "Ошибка", "Введите корректные числовые значения для интервала времени")
             return
         
         t_span = (t0, tf)
-        # Вызов функции построения графика
         try:
             plot_solution(equations, vars_list, params, t_span, ic)
         except Exception as e:
-            messagebox.showerror("Ошибка", f"При построении графика произошла ошибка:\n{e}")
+            QMessageBox.critical(self, "Ошибка", f"При построении графика произошла ошибка:\n{e}")
 
-    btn_plot = tk.Button(root, text="Построить график", command=on_plot)
-    btn_plot.pack(padx=10, pady=10)
-
-    # Запуск главного цикла
-    root.mainloop()
+def build_gui():
+    app = QApplication(sys.argv)
+    window = ODESolverGUI()
+    window.show()
+    sys.exit(app.exec())
 
 if __name__ == '__main__':
     build_gui()

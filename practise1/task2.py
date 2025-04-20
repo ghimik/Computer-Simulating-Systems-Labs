@@ -56,10 +56,9 @@ def visualize_system_solution(time_interval, solution, params):
     :param params: Параметры системы (a, b, c).
     """
     t = np.linspace(time_interval[0], time_interval[1], 1000)
-    Y = solution.sol(t)  # Получаем значения [y1(t), y2(t), y3(t)]
+    Y = solution.sol(t)  
     y1, y2, y3 = Y
 
-    # 1. Фазовый портрет y1 от y2
     plt.figure(figsize=(8, 6))
     plt.plot(y1, y2, label=r'$y_1$ vs $y_2$', color='blue')
     plt.xlabel(r'$y_1$', fontsize=14)
@@ -69,7 +68,6 @@ def visualize_system_solution(time_interval, solution, params):
     plt.grid(True)
     plt.show()
 
-    # 2. График x(t) = y1(t)
     plt.figure(figsize=(8, 6))
     plt.plot(t, y1, label=r'$y_1(t)$', color='red')
     plt.xlabel(r'$t$', fontsize=14)
@@ -79,7 +77,6 @@ def visualize_system_solution(time_interval, solution, params):
     plt.grid(True)
     plt.show()
 
-    # 3. График y(t) = y2(t)
     plt.figure(figsize=(8, 6))
     plt.plot(t, y2, label=r'$y_2(t)$', color='green')
     plt.xlabel(r'$t$', fontsize=14)
@@ -89,7 +86,6 @@ def visualize_system_solution(time_interval, solution, params):
     plt.grid(True)
     plt.show()
 
-    # 4. График z(t) = y3(t)
     plt.figure(figsize=(8, 6))
     plt.plot(t, y3, label=r'$y_3(t)$', color='purple')
     plt.xlabel(r'$t$', fontsize=14)
@@ -103,18 +99,14 @@ def visualize_system_solution(time_interval, solution, params):
 # Главная функция
 # ------------------------------
 def main():
-    # Параметры системы
     a = 0.2
     b = 0.2
     c = 5
 
-    # Начальные условия
     initial_conditions = [1, 1, 1]
 
-    # Интервал времени
     time_interval = (0, 100)
 
-    # Решение системы ОДУ
     solution = solve_system_ode(
         ode_func=system_ode,
         initial_conditions=initial_conditions,
@@ -122,7 +114,6 @@ def main():
         params=(a, b, c)
     )
 
-    # Визуализация решения
     visualize_system_solution(time_interval, solution, (a, b, c))
 
 # ------------------------------

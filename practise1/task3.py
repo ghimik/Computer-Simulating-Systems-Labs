@@ -65,7 +65,7 @@ def visualize_solution(time_interval, solution, title, plot_derivative=False):
     :param plot_derivative: Если True, строит график y'(t).
     """
     t = np.linspace(time_interval[0], time_interval[1], 300)
-    Y = solution.sol(t)  # Получаем значения y(t) через dense_output
+    Y = solution.sol(t)  
     y = Y[0]  # y(t)
     y_prime = Y[1]  # y'(t)
 
@@ -84,7 +84,7 @@ def visualize_solution(time_interval, solution, title, plot_derivative=False):
 # Главная функция
 # ------------------------------
 def main():
-    # Уравнение 1: y'' + 2y' + 3y = cos(t), y(0) = 0, y'(0) = 0, t ∈ [0, 2π]
+    # y'' + 2y' + 3y = cos(t), y(0) = 0, y'(0) = 0, t ∈ [0, 2π]
     ode1_initial_conditions = [0, 0]
     ode1_time_interval = (0, 2 * np.pi)
     ode1_solution = solve_ode(ode1, ode1_initial_conditions, ode1_time_interval)
@@ -95,16 +95,16 @@ def main():
         plot_derivative=True
     )
 
-    # Уравнение 2: z'' - a(1 - z^2)z' + z = 0, z(0) = 2, z'(0) = 0, t ∈ [0, 30], a = 1
+    # z'' - a(1 - z^2)z' + z = 0, z(0) = 2, z'(0) = 0, t ∈ [0, 30], a = 1
     ode2_initial_conditions = [2, 0]
     ode2_time_interval = (0, 30)
-    ode2_params = (1,)  # a = 1
+    ode2_params = (1,)  
     ode2_solution = solve_ode(ode2, ode2_initial_conditions, ode2_time_interval, params=ode2_params)
     visualize_solution(
         ode2_time_interval,
         ode2_solution,
         title="Решение уравнения $z'' - a(1 - z^2)z' + z = 0$",
-        plot_derivative=False
+        plot_derivative=True  # Изменил на True, чтобы показывать производную
     )
 
 # ------------------------------
